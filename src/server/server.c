@@ -24,7 +24,8 @@ typedef struct sockaddr_in6 SOCKADDR_IN6_T;
 #define SV_MSG_SZ 32
 
 
-THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
+THREAD_RETURN WOLFSSL_THREAD server_test(word16 port, const char* ourKey,
+                const char* ourCert)
 {
     SOCKET_T sockfd = WOLFSSL_SOCKET_INVALID;
     SOCKET_T clientfd = WOLFSSL_SOCKET_INVALID;
@@ -35,12 +36,7 @@ THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
     WOLFSSL_CTX*    ctx = NULL;
     WOLFSSL*    ssl     = NULL;
 
-    int     argc = ((func_args*)args)->argc;
-    char**  argv = ((func_args*)args)->argv;
-
-    word16 port = wolfSSLPort;
-    const char* ourKey = NULL;
-    const char* ourCert = NULL;
+    func_args* args = NULL;
 
     int version = SERVER_DEFAULT_VERSION;
     int useAnyAddr = 0;
@@ -53,24 +49,6 @@ THREAD_RETURN WOLFSSL_THREAD server_test(void* args)
     char msg[SV_MSG_SZ];
     int msgSz = 0;
     int finish = 0;
-
-    int ch;
-
-    while ((ch = mygetopt(argc, argv, "c:k:p:")) != -1) {
-        switch(ch){
-            case 'p': /* port */
-                port = (word16)atoi(myoptarg);
-                break;
-            case 'k': /* key file */
-                ourKey = myoptarg;
-                break;
-            case 'c': /* cert file */
-                ourCert = myoptarg;
-                break;
-            default:
-                ;
-        }
-    }
 
     switch (version) {
 #ifndef NO_OLD_TLS
@@ -189,7 +167,7 @@ int main(int argc, char** argv)
     args.return_code = 0;
 
     wolfSSL_Init();
-    server_test(&args);
+    server_test();
     wolfSSL_Cleanup();
     return 0;
 }

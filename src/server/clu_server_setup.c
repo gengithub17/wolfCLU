@@ -14,10 +14,6 @@ static const struct option server_options[] = {
     {0,0,0,0}
 };
 
-static const char portFlag[]        = "-p";
-static const char keyFileFlag[]     = "-k";
-static const char certFileFlag[]    = "-c";
-
 static void wolfCLU_ServerHelp(void) 
 {
     WOLFCLU_LOG(WOLFCLU_L0, "./wolfssl s_server");
@@ -28,65 +24,33 @@ static void wolfCLU_ServerHelp(void)
 
 #define MAX_SERVER_ARGS 7
 
-/* return WOLFSSL_SUCCESS on success */
-static int _addServerArg(const char** args, const char* in, int* idx)
-{
-    int ret = WOLFCLU_SUCCESS;
-
-    if (*idx >= MAX_SERVER_ARGS) {
-        wolfCLU_LogError("Too many server args for array");
-        ret = WOLFCLU_FATAL_ERROR;
-    }
-    else {
-        args[*idx] = in;
-        *idx = *idx + 1;
-    }
-    return ret;
-}
-
 #endif /* !WOLFCLU_NO_FILESYSTEM */
 
 int wolfCLU_Server(int argc, char** argv)
 {
-    func_args args;
     int ret = WOLFCLU_SUCCESS;
     int longIndex = 1;
     int option;
-    
-    int serverArgc = 0;
-    const char* serverArgv[MAX_SERVER_ARGS];
 
-    ret = _addServerArg(serverArgv, "wolfclu", &serverArgc);
+    word16 port = wolfSSLPort;
+    char* ourKey = NULL;
+    char* ourCert = NULL;
 
     opterr = 0;
     optind = 0;
 
     while ((option = wolfCLU_GetOpt(argc, argv, "", server_options, &longIndex))
                     != -1) {
+        
         switch (option) {
             case WOLFCLU_PORT:
-                if (ret == WOLFCLU_SUCCESS) {
-                    ret = _addServerArg(serverArgv, portFlag, &serverArgc);
-                    if (ret == WOLFCLU_SUCCESS) {
-                        ret = _addServerArg(serverArgv, optarg, &serverArgc);
-                    }
-                }
+                port = (word16)atoi(optarg);
                 break;
             case WOLFCLU_KEYFILE:
-                if (ret == WOLFCLU_SUCCESS) {
-                    ret = _addServerArg(serverArgv, keyFileFlag, &serverArgc);
-                    if (ret == WOLFCLU_SUCCESS) {
-                        ret = _addServerArg(serverArgv, optarg, &serverArgc);
-                    }
-                }
+                ourKey = optarg;
                 break;
             case WOLFCLU_CERTFILE:
-                if (ret == WOLFCLU_SUCCESS) {
-                    ret = _addServerArg(serverArgv, certFileFlag, &serverArgc);
-                    if (ret == WOLFCLU_SUCCESS) {
-                        ret = _addServerArg(serverArgv, optarg, &serverArgc);
-                    }
-                }
+                ourCert = optarg;
                 break;
             case WOLFCLU_HELP:
                 wolfCLU_ServerHelp();
@@ -94,11 +58,7 @@ int wolfCLU_Server(int argc, char** argv)
         }
     }
 
-    if (ret == WOLFCLU_SUCCESS) {
-        args.argv = (char**)serverArgv;
-        args.argc = serverArgc;
-        server_test(&args);
-    }
+    server_test(port, ourKey, ourCert);
     
     return ret;
 }
