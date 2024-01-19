@@ -1,6 +1,6 @@
 /* clu_client_setup.c
  *
- * Copyright (C) 2006-2021 wolfSSL Inc.
+ * Copyright (C) 2006-2023 wolfSSL Inc.
  *
  * This file is part of wolfSSL.
  *
@@ -31,6 +31,8 @@
 
 static const struct option client_options[] = {
     {"-connect",             required_argument, 0, WOLFCLU_CONNECT            },
+    {"-key",                 required_argument, 0, WOLFCLU_KEYFILE            },
+    {"-cert",                required_argument, 0, WOLFCLU_CERTFILE           },
     {"-starttls",            required_argument, 0, WOLFCLU_STARTTLS           },
     {"-CAfile",              required_argument, 0, WOLFCLU_CAFILE             },
     {"-verify_return_error", no_argument,       0, WOLFCLU_VERIFY_RETURN_ERROR},
@@ -58,6 +60,8 @@ static void wolfCLU_ClientHelp(void)
 static const char hostFlag[]       = "-h";
 static const char ipv6Flag[]       = "-6";
 static const char portFlag[]       = "-p";
+static const char keyFileFlag[]    = "-k";
+static const char certFileFlag[]   = "-c";
 static const char noVerifyFlag[]   = "-d";
 static const char caFileFlag[]     = "-A";
 static const char noClientCert[]   = "-x";
@@ -196,6 +200,24 @@ int wolfCLU_Client(int argc, char** argv)
             case WOLFCLU_STARTTLS:
                 if (ret == WOLFCLU_SUCCESS) {
                     ret = _addClientArg(clientArgv, startTLSFlag, &clientArgc);
+                    if (ret == WOLFCLU_SUCCESS) {
+                        ret = _addClientArg(clientArgv, optarg, &clientArgc);
+                    }
+                }
+                break;
+
+            case WOLFCLU_KEYFILE:
+                if (ret == WOLFCLU_SUCCESS) {
+                    ret = _addClientArg(clientArgv, keyFileFlag, &clientArgc);
+                    if (ret == WOLFCLU_SUCCESS) {
+                        ret = _addClientArg(clientArgv, optarg, &clientArgc);
+                    }
+                }
+                break;
+
+            case WOLFCLU_CERTFILE:
+                if (ret == WOLFCLU_SUCCESS) {
+                    ret = _addClientArg(clientArgv, certFileFlag, &clientArgc);
                     if (ret == WOLFCLU_SUCCESS) {
                         ret = _addClientArg(clientArgv, optarg, &clientArgc);
                     }
